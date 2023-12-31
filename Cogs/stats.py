@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-bot = telegram.Bot(token=os.getenv("TELEGRAM_BOT"))
+bot = telegram.Bot(token=os.getenv("pyrin_tg_bot"))
 
 telegram_chat_id = -1001534672988 #telegram chat id
 
@@ -109,10 +109,10 @@ class Stats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.ready = False
-        self.channel_id =   #price feed channel
-        self.channel_mc =  #marketcap channel
-        self.member_countChannel =  #members count channel
-        self.channel_telegram =   #telegram member count channel
+        self.channel_id = 1191012395708055612   #price feed channel
+        self.channel_mc = 1191012550561767434 #marketcap channel
+        self.member_countChannel = 1191012673668796456  #members count channel
+        self.channel_telegram = 1191012738227507360  #telegram member count channel
         
         self.update_memberCount.start()
         self.update_pyrin_price.start() 
@@ -207,7 +207,7 @@ class Stats(commands.Cog):
             return
 
         # Fetch the member count of the Telegram group
-        telegram_bot = telegram.Bot(token=os.getenv("TELEGRAM_BOT"))
+        telegram_bot = telegram.Bot(token=os.getenv("pyrin_tg_bot"))
         chat_id = telegram_chat_id
         telegram_member_count = await telegram_bot.get_chat_member_count(chat_id) # await the coroutine
 
