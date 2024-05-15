@@ -2,19 +2,12 @@ import discord
 from discord.ext import commands, tasks
 import requests
 import json
-from requests.exceptions import RequestException,ConnectTimeout
-import telegram
-import os
+from requests.exceptions import RequestException, ConnectTimeout
 from dotenv import load_dotenv
+import os
 
 
 load_dotenv()
-
-
-bot = telegram.Bot(token=os.getenv("pyrin_tg_bot"))
-
-telegram_chat_id = -1001534672988 #telegram chat id
-
 
 intents = discord.Intents(guilds=True)
 client = discord.Client(intents=intents)
@@ -25,40 +18,13 @@ intents.members = True
 #verified role id, you can get this by right clicking the role on discord and copy
 
 def get_price():
-   url = "https://api.livecoinwatch.com/coins/single"
-   payload = json.dumps({
-       "currency": "USD",
-       "code": "PYI",
-       "meta": True
-   })
+    """
+    Retrieves the current price of PYI cryptocurrency from LiveCoinWatch API.
 
-   headers = {
-       'content-type': 'application/json',
-       'x-api-key': '045cd7e4-a5a4-4a12-9473-cb4ec60ce97a'
-   }
-
-   try:
-       response = requests.request("POST", url, headers=headers, data=payload, timeout=30)
-       response.raise_for_status() # Raises stored HTTPError, if one occurred.
-       data = json.loads(response.text)
-       price = data['rate']
-       return price
-   except KeyError:
-       return None
-   except RequestException as e:
-       print(f"An error occurred while making the API request: {e}")
-       return None
-   except ConnectTimeout as e:
-       print(f"Connection to the API timed out: {e}")
-       return None
-   except requests.exceptions.HTTPError as e:
-       if e.response.status_code == 502:
-           print("Server Error: Bad Gateway")
-       return None
-
-
-# fetch marketcap    
-def get_mc():
+    Returns:
+        float: The current price of PYI in USD.
+        None: If an error occurs during the request or processing the response.
+    """
     url = "https://api.livecoinwatch.com/coins/single"
     payload = json.dumps({
         "currency": "USD",
@@ -75,20 +41,65 @@ def get_mc():
         response = requests.request("POST", url, headers=headers, data=payload, timeout=30)
         response.raise_for_status()  # Raises stored HTTPError, if one occurred.
         data = json.loads(response.text)
-        mc= data['cap'] #mc stands for market cap
-        return mc
-    except KeyError:
-       return None
-    except RequestException as e:
-       print(f"An error occurred while making the API request: {e}")
-       return None
+        price = data['rate']
+        return price
     except ConnectTimeout as e:
-       print(f"Connection to the API timed out: {e}")
-       return None
+        print(f"Connection to the API timed out: {e}")
+        return None
     except requests.exceptions.HTTPError as e:
-       if e.response.status_code == 502:
-           print("Server Error: Bad Gateway")
-       return None
+        if e.response.status_code == 502:
+            print("Server Error: Bad Gateway")
+        else:
+            print(f"An HTTP error occurred: {e}")
+        return None
+    except KeyError:
+        return None
+    except RequestException as e:
+        print(f"An error occurred while making the API request: {e}")
+        return None
+
+# fetch marketcap    
+def get_mc():
+    """
+    Retrieves the market capitalization (MC) of PYI cryptocurrency from LiveCoinWatch API.
+
+    Returns:
+        int: The market capitalization of PYI in USD.
+        None: If an error occurs during the request or processing the response.
+    """
+    url = "https://api.livecoinwatch.com/coins/single"
+    payload = json.dumps({
+        "currency": "USD",
+        "code": "PYI",
+        "meta": True
+    })
+
+    headers = {
+        'content-type': 'application/json',
+        'x-api-key': '045cd7e4-a5a4-4a12-9473-cb4ec60ce97a'
+    }
+
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload, timeout=30)
+        response.raise_for_status()  # Raises stored HTTPError, if one occurred.
+        data = json.loads(response.text)
+        mc = data['cap']  # mc stands for market cap
+        return mc
+    except ConnectTimeout as e:
+        print(f"Connection to the API timed out: {e}")
+        return None
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 502:
+            print("Server Error: Bad Gateway")
+        else:
+            print(f"An HTTP error occurred: {e}")
+        return None
+    except KeyError:
+        return None
+    except RequestException as e:
+        print(f"An error occurred while making the API request: {e}")
+        return None
+
     
 def format_marketcap(marketcap):
     million = 1000000
@@ -101,6 +112,64 @@ def format_marketcap(marketcap):
     else:
         return f"${marketcap / billion:.1f}B"
     
+def format_circulating_supply(circulating_supply):
+    """
+    Formats the circulating supply with 'k' for thousands, 'm' for millions, and 'b' for billions.
+
+    Args:
+        circulating_supply (int): The circulating supply of the cryptocurrency.
+
+    Returns:
+        str: Formatted string representing the circulating supply.
+    """
+    if circulating_supply >= 1000000000:
+        return f"{circulating_supply / 1000000000:.1f}b"
+    elif circulating_supply >= 1000000:
+        return f"{circulating_supply / 1000000:.1f}m"
+    else:
+        return f"{circulating_supply / 1000:.1f}k"
+
+
+def get_circulating_supply():
+    """
+    Retrieves the circulating supply of PYI cryptocurrency from LiveCoinWatch API.
+
+    Returns:
+        int: The circulating supply of PYI.
+        None: If an error occurs during the request or processing the response.
+    """
+    url = "https://api.livecoinwatch.com/coins/single"
+    payload = json.dumps({
+        "currency": "USD",
+        "code": "PYI",
+        "meta": True
+    })
+
+    headers = {
+        'content-type': 'application/json',
+        'x-api-key': '045cd7e4-a5a4-4a12-9473-cb4ec60ce97a'
+    }
+
+    try:
+        response = requests.request("POST", url, headers=headers, data=payload, timeout=30)
+        response.raise_for_status() 
+        data = json.loads(response.text)
+        cs = data['circulatingSupply']  
+        return cs
+    except ConnectTimeout as e:
+        print(f"Connection to the API timed out: {e}")
+        return None
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 502:
+            print("Server Error: Bad Gateway")
+        else:
+            print(f"An HTTP error occurred: {e}")
+        return None
+    except KeyError:
+        return None
+    except RequestException as e:
+        print(f"An error occurred while making the API request: {e}")
+        return None
     
 #mc stands for marketcap fyi    
 
@@ -109,111 +178,84 @@ class Stats(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.bot.ready = False
-        self.channel_id = 1191012395708055612   #price feed channel
-        self.channel_mc = 1191012550561767434 #marketcap channel
-        self.member_countChannel = 1191012673668796456  #members count channel
-        self.channel_telegram = 1191012738227507360  #telegram member count channel
-        
-        self.update_memberCount.start()
-        self.update_pyrin_price.start() 
+        self.channel_price = os.getenv("channel_price")
+        self.channel_mc = os.getenv("channel_mc")
+        self.channel_cirsupply = os.getenv("circulating_supply")
+        self.update_pyrin_price.start()
         self.update_market_cap.start()
-        self.update_telegram.start()
-        
-        
-         
+        self.update_cirsupply.start()
     
     @commands.Cog.listener()
     async def on_ready(self):
         if not self.bot.ready:
             self.bot.ready = True
-            print(f'Bot is ready. Channel ID: {self.channel_id}')
+            print(f'Bot is ready. Channel ID: {self.channel_price}')
+            print(f'Bot is ready. Channel ID: {self.channel_mc}')
+            print(f'Bot is ready. Channel ID: {self.channel_cirsupply}')
             
-    @tasks.loop(seconds=30)  # Update every minute
+    @tasks.loop(seconds=30)
     async def update_pyrin_price(self):
-        pyrin_price = get_price() 
-        
-        if not self.bot.ready or self.channel_id is None:  # Don't do anything if the bot isn't ready or the channel hasn't been set
+        pyrin_price = get_price()
+
+        if not self.bot.ready or self.channel_price is None:
             return
 
-        channel = self.bot.get_channel(int(self.channel_id))  # Make sure to convert the channel ID to an integer
+        channel = self.bot.get_channel(int(self.channel_price))
 
         if channel is None:
-            print(f'Could not find channel with ID {self.channel_id}')
+            print(f'Could not find channel with ID {self.channel_price}')
             return
-        
+
         if pyrin_price is not None:
             formatted_price = "{:.3f}".format(pyrin_price)
-            # Update the channel's name with the price
             await channel.edit(name=f"PYI: ${formatted_price}")
-            
-            # Set the bot's status
             await self.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"Pyrin Price: ${pyrin_price}"))
-        else:
-            print("Could not fetch Pyrin price")
-        
+
     @tasks.loop(seconds=30)
     async def update_market_cap(self):
         try:
             market_cap = get_mc()
-            
-            if not self.bot.ready or self.channel_mc is None:  # Don't do anything if the bot isn't ready or the channel hasn't been set
+
+            if not self.bot.ready or self.channel_mc is None:
                 return
 
-            channel = self.bot.get_channel(int(self.channel_mc))  # Make sure to convert the channel ID to an integer
+            channel = self.bot.get_channel(int(self.channel_mc))
 
             if channel is None:
                 print(f'Could not find channel with ID {self.channel_mc}')
                 return
-            
+
             formatted_marketcap = format_marketcap(market_cap)
-            
-            #edit channel name with marketcap
+
             await channel.edit(name=f"MCap: {formatted_marketcap}")
-            
-            
+
         except requests.exceptions.RequestException as e:
             print(f"An error occurred while fetching the market cap: {str(e)}")
-        except Exception as e:
-            print(f"An unexpected error occurred: {str(e)}")
-     
-    """verified members count function checks the number of verified members in the server and displays it over the channel"""
-           
-    @tasks.loop(seconds=30) # Update every 30 seconds
-    async def update_memberCount(self):
-        if not self.bot.ready or self.member_countChannel is None:
-            return
+        except ValueError as e:
+            print(f"A formatting error occurred: {str(e)}")
+            
+    @tasks.loop(seconds=30)
+    async def update_cirsupply(self):
+        try:
+            cs = get_circulating_supply()
 
-        channel = self.bot.get_channel(int(self.member_countChannel))
+            if not self.bot.ready or self.channel_cirsupply is None:
+                return
 
-        if channel is None:
-            print(f'Could not find channel with ID {self.member_countChannel}')
-            return
+            channel = self.bot.get_channel(int(self.channel_cirsupply))
 
-        guild = self.bot.guilds[0] # Get the first guild the bot is in
-        total_member_count = guild.member_count # Get the total number of members in the guild
+            if channel is None:
+                print(f'Could not find channel with ID {self.channel_cirsupply}')
+                return
 
-        await channel.edit(name=f"Members: {total_member_count}")
-        
-    
-    @tasks.loop(seconds=30) # Update every 30 seconds
-    async def update_telegram(self):
-        if not self.bot.ready or self.channel_telegram is None:
-            return
-
-        channel = self.bot.get_channel(int(self.channel_telegram))
-
-        if channel is None:
-            print(f'Could not find channel with ID {self.channel_telegram}')
-            return
-
-        # Fetch the member count of the Telegram group
-        telegram_bot = telegram.Bot(token=os.getenv("pyrin_tg_bot"))
-        chat_id = telegram_chat_id
-        telegram_member_count = await telegram_bot.get_chat_member_count(chat_id) # await the coroutine
-
-        await channel.edit(name=f"Telegram: {telegram_member_count}")
+            if cs is not None:
+                formatted_cs = format_circulating_supply(cs)
+                await channel.edit(name=f"Cir.Supply: {formatted_cs}")
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred while fetching the circulating supply: {str(e)}")
+        except ValueError as e:
+            print(f"A formatting error occurred: {str(e)}")
 
 
-    
 def setup(bot):
     bot.add_cog(Stats(bot))

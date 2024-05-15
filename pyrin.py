@@ -16,8 +16,7 @@ async def on_ready():
     print("Bot is ready!")
 
 Cogs_list = [
-    "stats",
-    
+    "stats", 
 ]
 
 for Cog in Cogs_list:
