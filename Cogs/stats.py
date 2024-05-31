@@ -257,5 +257,5 @@ class Stats(commands.Cog):
             print(f"A formatting error occurred: {str(e)}")
 
 
-def setup(bot):
-    bot.add_cog(Stats(bot))
+async def setup(bot):
+    await bot.add_cog(Stats(bot))
